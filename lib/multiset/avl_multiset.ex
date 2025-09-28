@@ -1,4 +1,6 @@
-defmodule AVLMultiset do
+defmodule Multiset.AVLMultiset do
+  alias Multiset.AVLMultiset
+
   defmodule Node do
     defstruct value: nil, count: 1, height: 1, left: nil, right: nil
   end
@@ -166,5 +168,119 @@ defmodule AVLMultiset do
       left: ll,
       right: %Node{value: v, count: c, height: h, left: lr, right: r}
     }
+  end
+
+  # =====
+
+  def filter(%AVLMultiset{root: root}, fun) do
+    new_tree = filter_node(root, fun, new())
+    new_tree
+  end
+
+  defp filter_node(nil, _fun, acc_tree), do: acc_tree
+
+  defp filter_node(%Node{value: v, count: c, left: l, right: r}, fun, acc_tree) do
+    acc_tree = filter_node(l, fun, acc_tree)
+
+    acc_tree =
+      if fun.(v) do
+        1..c |> Enum.reduce(acc_tree, fn _, tree -> add(tree, v) end)
+      else
+        acc_tree
+      end
+
+    filter_node(r, fun, acc_tree)
+  end
+
+  def map(%AVLMultiset{root: root}, fun) do
+    new_tree = map_node(root, fun, new())
+    new_tree
+  end
+
+  defp map_node(nil, _fun, acc_tree), do: acc_tree
+
+  defp map_node(%Node{value: v, count: c, left: l, right: r}, fun, acc_tree) do
+    acc_tree = map_node(l, fun, acc_tree)
+    new_v = fun.(v)
+    acc_tree = 1..c |> Enum.reduce(acc_tree, fn _, tree -> add(tree, new_v) end)
+    map_node(r, fun, acc_tree)
+  end
+
+  def foldl(%AVLMultiset{root: root}, acc, fun) do
+    foldl_node(root, acc, fun)
+  end
+
+  defp foldl_node(nil, acc, _fun), do: acc
+
+  defp foldl_node(%Node{value: v, count: c, left: l, right: r}, acc, fun) do
+    acc = foldl_node(l, acc, fun)
+    acc = fun.(v, c, acc)
+    foldl_node(r, acc, fun)
+  end
+
+  def foldr(%AVLMultiset{root: root}, acc, fun) do
+    foldr_node(root, acc, fun)
+  end
+
+  defp foldr_node(nil, acc, _fun), do: acc
+
+  defp foldr_node(%Node{value: v, count: c, left: l, right: r}, acc, fun) do
+    acc = foldr_node(r, acc, fun)
+    acc = fun.(v, c, acc)
+    foldr_node(l, acc, fun)
+  end
+end
+
+defimpl Multiset, for: Multiset.AVLMultiset do
+  alias Multiset.AVLMultiset
+
+  def add(multiset, element), do: AVLMultiset.add(multiset, element)
+
+  def remove(multiset, element), do: AVLMultiset.remove(multiset, element)
+
+  def count(multiset, element), do: AVLMultiset.count(multiset, element)
+
+  def contains?(multiset, element), do: AVLMultiset.contains?(multiset, element)
+
+  def size(multiset), do: AVLMultiset.size(multiset)
+
+  def empty?(multiset), do: AVLMultiset.empty?(multiset)
+end
+
+defimpl Enumerable, for: Multiset.AVLMultiset do
+  alias Multiset.AVLMultiset
+  alias Multiset.AVLMultiset.Node
+
+  def count(%AVLMultiset{size: size}), do: {:ok, size}
+
+  def member?(%AVLMultiset{} = multiset, value) do
+    {:ok, AVLMultiset.contains?(multiset, value)}
+  end
+
+  def reduce(%AVLMultiset{root: root}, acc, fun) do
+    reduce_node(root, acc, fun)
+  end
+
+  def slice(_multiset), do: {:error, __MODULE__}
+
+  defp reduce_node(_node, {:halt, acc}, _fun), do: {:halted, acc}
+
+  defp reduce_node(node, {:suspend, acc}, fun) do
+    {:suspended, acc, fn cmd -> reduce_node(node, cmd, fun) end}
+  end
+
+  defp reduce_node(nil, {:cont, acc}, _fun), do: {:cont, acc}
+
+  defp reduce_node(%Node{value: v, count: c, left: l, right: r}, {:cont, acc}, fun) do
+    acc = reduce_node(l, {:cont, acc}, fun)
+
+    case acc do
+      {:cont, acc} ->
+        acc = Enum.reduce(1..c, acc, fn _, acc -> fun.(v, acc) end)
+        reduce_node(r, {:cont, acc}, fun)
+
+      other ->
+        other
+    end
   end
 end
