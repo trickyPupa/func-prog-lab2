@@ -5,23 +5,26 @@ defmodule Multiset.MultisetPropertyTest do
   alias Multiset.AVLMultiset
 
   defp avl_balanced?(nil), do: true
+
   defp avl_balanced?(%AVLMultiset.Node{left: left, right: right, height: height}) do
     left_height = height(left)
     right_height = height(right)
+
     abs(left_height - right_height) <= 1 and
       height == 1 + max(left_height, right_height) and
       avl_balanced?(left) and avl_balanced?(right)
   end
+
   defp height(nil), do: 0
   defp height(%AVLMultiset.Node{height: h}), do: h
 
-  defp multiset() do
+  defp multiset do
     let elements <- list(integer()) do
       Enum.reduce(elements, AVLMultiset.new(), fn x, acc -> Multiset.add(acc, x) end)
     end
   end
 
-  defp non_empty_multiset() do
+  defp non_empty_multiset do
     let elements <- non_empty(list(integer())) do
       Enum.reduce(elements, AVLMultiset.new(), fn x, acc -> Multiset.add(acc, x) end)
     end
@@ -101,10 +104,11 @@ defmodule Multiset.MultisetPropertyTest do
 
   property "adding and removing maintains AVL balance" do
     forall ops <- list({oneof([:add, :remove]), integer()}) do
-      ms = Enum.reduce(ops, AVLMultiset.new(), fn
-        {:add, key}, acc -> Multiset.add(acc, key)
-        {:remove, key}, acc -> Multiset.remove(acc, key)
-      end)
+      ms =
+        Enum.reduce(ops, AVLMultiset.new(), fn
+          {:add, key}, acc -> Multiset.add(acc, key)
+          {:remove, key}, acc -> Multiset.remove(acc, key)
+        end)
 
       assert avl_balanced?(ms.root)
     end

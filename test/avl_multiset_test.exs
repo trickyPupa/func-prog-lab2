@@ -61,18 +61,20 @@ defmodule AVLMultisetUnitTest do
   test "size", %{set: set} do
     assert 8 == Multiset.size(set)
 
-    set = set
-    |> Multiset.remove(5)
-    |> Multiset.remove(5)
-    |> Multiset.remove(3)
+    set =
+      set
+      |> Multiset.remove(5)
+      |> Multiset.remove(5)
+      |> Multiset.remove(3)
 
     assert 5 == Multiset.size(set)
 
-    set = set
-    |> Multiset.remove(5)
-    |> Multiset.remove(10)
-    |> Multiset.remove(15)
-    |> Multiset.add(1)
+    set =
+      set
+      |> Multiset.remove(5)
+      |> Multiset.remove(10)
+      |> Multiset.remove(15)
+      |> Multiset.add(1)
 
     assert 3 == Multiset.size(set)
   end
@@ -98,16 +100,18 @@ defmodule AVLMultisetUnitTest do
     assert Multiset.contains?(set, 2)
     assert Multiset.contains?(set, 15)
 
-    set = set
-    |> Multiset.filter(fn x -> x > 10 end)
+    set =
+      set
+      |> Multiset.filter(fn x -> x > 10 end)
 
     assert not Multiset.contains?(set, 5)
     assert not Multiset.contains?(set, 2)
     assert Multiset.contains?(set, 15)
     assert Multiset.contains?(set, 121)
 
-    set = set
-    |> Multiset.filter(fn x -> x < 100 end)
+    set =
+      set
+      |> Multiset.filter(fn x -> x < 100 end)
 
     assert not Multiset.contains?(set, 121)
 

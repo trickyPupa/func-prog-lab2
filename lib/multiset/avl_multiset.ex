@@ -7,7 +7,7 @@ defmodule Multiset.AVLMultiset do
 
   defstruct root: nil, size: 0
 
-  def new(), do: %AVLMultiset{}
+  def new, do: %AVLMultiset{}
 
   def contains?(bag, key), do: count(bag, key) > 0
 
