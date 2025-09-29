@@ -20,6 +20,7 @@ defmodule Lab2.MixProject do
   defp deps do
     [
       {:stream_data, "~> 0.6", only: :test},
+      {:propcheck, "~> 1.4", only: [:test, :dev]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
