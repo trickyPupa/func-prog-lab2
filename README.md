@@ -66,6 +66,7 @@ defprotocol Multiset do
   def map(bag, fun)
   def foldl(bag, acc, fun)
   def foldr(bag, acc, fun)
+  def union(bag1, bag2)
 end
 
 ```

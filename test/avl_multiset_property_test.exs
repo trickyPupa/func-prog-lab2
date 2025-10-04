@@ -152,7 +152,7 @@ defmodule Multiset.MultisetPropertyTest do
     end
   end
 
-  property "unioin with neutral element" do
+  property "union with neutral element" do
     forall ms <- multiset() do
       empty_ms = AVLMultiset.new()
 
