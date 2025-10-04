@@ -28,6 +28,10 @@ defmodule Multiset.AVLMultiset do
   def empty?(%AVLMultiset{root: nil}), do: true
   def empty?(_), do: false
 
+  def union(%AVLMultiset{} = bag1, %AVLMultiset{} = bag2) do
+    AVLMultiset.foldl(bag2, bag1, fn x, acc -> AVLMultiset.add(acc, x) end)
+  end
+
   # ===== private =====
 
   defp do_count(nil, _), do: 0
@@ -201,7 +205,6 @@ defmodule Multiset.AVLMultiset do
 
   defp foldl_node(%Node{value: v, count: c, left: l, right: r}, acc, fun) do
     acc = foldl_node(l, acc, fun)
-    # acc = fun.({v, c}, acc)
     acc = 1..c |> Enum.reduce(acc, fn _, a -> fun.(v, a) end)
     foldl_node(r, acc, fun)
   end
@@ -214,7 +217,6 @@ defmodule Multiset.AVLMultiset do
 
   defp foldr_node(%Node{value: v, count: c, left: l, right: r}, acc, fun) do
     acc = foldr_node(r, acc, fun)
-    # acc = fun.({v, c}, acc)
     acc = 1..c |> Enum.reduce(acc, fn _, a -> fun.(v, a) end)
     foldr_node(l, acc, fun)
   end
@@ -244,4 +246,6 @@ defimpl Multiset, for: Multiset.AVLMultiset do
   def foldl(multiset, acc, fun), do: AVLMultiset.foldl(multiset, acc, fun)
 
   def foldr(multiset, acc, fun), do: AVLMultiset.foldr(multiset, acc, fun)
+
+  def union(bag1, bag2), do: AVLMultiset.union(bag1, bag2)
 end

@@ -113,4 +113,60 @@ defmodule Multiset.MultisetPropertyTest do
       assert avl_balanced?(ms.root)
     end
   end
+
+    property "union left identity: union(return(x), m) behaves correctly" do
+    forall {x, m} <- {integer(), multiset()} do
+      return_x = Multiset.add(AVLMultiset.new(), x)
+      union_result = Multiset.union(return_x, m)
+
+      assert Multiset.count(union_result, x) == 1 + Multiset.count(m, x)
+      m_list = AVLMultiset.to_list(m)
+      assert Enum.all?(m_list, fn e ->
+        e == x || Multiset.count(union_result, e) == Multiset.count(m, e)
+      end)
+    end
+  end
+
+  property "union right identity: union(m, return(x)) behaves correctly" do
+    forall {m, x} <- {multiset(), integer()} do
+      return_x = Multiset.add(AVLMultiset.new(), x)
+      union_result = Multiset.union(m, return_x)
+
+      assert Multiset.count(union_result, x) == Multiset.count(m, x) + 1
+      m_list = AVLMultiset.to_list(m)
+      assert Enum.all?(m_list, fn e ->
+        e == x || Multiset.count(union_result, e) == Multiset.count(m, e)
+      end)
+    end
+  end
+
+  property "union associativity: union(union(m1, m2), m3) == union(m1, union(m2, m3))" do
+    forall {m1, m2, m3} <- {multiset(), multiset(), multiset()} do
+      left = Multiset.union(Multiset.union(m1, m2), m3)
+      right = Multiset.union(m1, Multiset.union(m2, m3))
+
+      left_list = AVLMultiset.to_list(left)
+      right_list = AVLMultiset.to_list(right)
+
+      assert left_list == right_list
+    end
+  end
+
+  property "unioin with neutral element" do
+    forall ms <- multiset() do
+      empty_ms = AVLMultiset.new()
+
+      list = AVLMultiset.to_list(ms)
+
+      assert Multiset.union(ms, empty_ms) |> AVLMultiset.to_list == list
+      assert Multiset.union(empty_ms, ms) |> AVLMultiset.to_list == list
+    end
+  end
+
+  property "union maintains AVL balance" do
+    forall {m1, m2} <- {multiset(), multiset()} do
+      union_result = Multiset.union(m1, m2)
+      assert avl_balanced?(union_result.root)
+    end
+  end
 end
